@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+
+<body>
+    <input id="r" type="range" min=0 max=255>
+    <input id="g" type="range" min=0 max=255>
+    <input id="b" type="range" min=0 max=255>
+
+    <div id="box" style="width: 100px; height: 100px;"></div>
+
+    <script>
+        var obj = {
+            r : 0,
+            g : 0,
+            b : 0
+        }
+        let callbacks = new Map
+        let usedActives = []
+        let proxys = new Map
+        var p = reactive(obj)
+    
+        effect(()=>{
+           let r = document.getElementById("r")
+           r.value = p.r
+        })
+
+        effect(()=>{
+           let g = document.getElementById("g")
+           g.value = p.g
+        })
+
+        effect(()=>{
+           let b = document.getElementById("b")
+           b.value = p.b
+        })
+
+        effect(()=>{
+           let box = document.getElementById("box")
+           box.style.backgroundColor = `rgb(${p.r}, ${p.g}, ${p.b})`
+        })
+
+        document.getElementById("r").addEventListener("input", event => {
+            p.r = event.target.value 
+        })
+
+        
+        document.getElementById("g").addEventListener("input", event => {
+            p.g = event.target.value 
+        })
+
+        
+        document.getElementById("b").addEventListener("input", event => {
+            p.b = event.target.value 
+        })
+
+        function effect(callback) {
+            usedActives = []
+            callback()
+            for (let usedActive of usedActives) {
+                //开始进行设置回调
+                if (!callbacks.get(usedActive[0])) {
+                    callbacks.set(usedActive[0], new Map)
+                }
+                //是否有对应的属性
+                if (!callbacks.get(usedActive[0]).get(usedActive[1])) {
+                    callbacks.get(usedActive[0]).set(usedActive[1], [])
+                }
+                let arr = callbacks.get(usedActive[0]).get((usedActive[1]));
+                arr.push(callback)
+            }
+        }   
+
+        function reactive(obj) {
+            if (proxys.has(obj)) {
+                return proxys.get(obj)
+            }
+            let proxy = new Proxy(obj, {
+                set(o, prop, val) {
+                    o[prop] = val
+                    if (callbacks.get(o) && callbacks.get(o).get(prop)) {
+                        for (let callback of callbacks.get(o).get(prop)) {
+                            callback()
+                        }
+                    }
+                },
+                get(o, prop) {
+                    if (typeof o[prop] === "object") {
+                        return reactive(o[prop])
+                    }
+                    usedActives.push([o, prop])
+                    return o[prop]
+                }
+            })
+            proxys.set(obj, proxy)
+            return proxy
+        }
+    </script>
+</body>
+</html>

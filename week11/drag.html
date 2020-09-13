@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+    <div id="box">
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+    </div>
+
+    <div id="drag" style="display: inline-block;width: 100px; height: 100px; background-color: red;"></div>
+
+    <script>
+        let drag = document.getElementById("drag")
+        let baseX = 0, baseY = 0
+        drag.addEventListener("mousedown", function(event) {
+            let startX = event.clientX
+            let startY = event.clientY
+            let move = (event) => {
+                let range = getLately(event.clientY, event.clientY)
+                range.insertNode(drag)
+                //drag.style.transform = `translate(${baseX + event.clientX - startX}px, ${baseY + event.clientY - startY}px)`
+            }
+
+            let up = (event) => {
+                baseX = baseX + event.clientX - startX
+                baseY = baseY + event.clientY - startY
+                document.removeEventListener("mousemove", move)
+                document.removeEventListener("mouseup", up)
+            }
+
+            document.addEventListener("mousemove", move)
+            document.addEventListener("mouseup", up)
+        })
+
+        //获取所有的range
+        let ranges = []
+        let box = document.getElementById("box")
+        console.log(box.childNodes)
+        for (let i = 0; i < box.childNodes[0].textContent.length; i++) {
+            let range = document.createRange()
+            range.setStart(box.childNodes[0], i)
+            range.setEnd(box.childNodes[0], i)
+            ranges.push(range)
+        }
+
+        //开始获得最进的一个
+        function getLately(x, y) {
+            let distance = Infinity
+            let min = null
+            for (let i = 0; i < ranges.length; i++) {
+                let rect = ranges[i].getBoundingClientRect()
+                let d = (x - rect.x) ** 2 + (y - rect.y) ** 2
+                if (d < distance ) {
+                    distance = d
+                    min = ranges[i]
+                }
+            }
+            return min
+        }
+
+        document.addEventListener("selectstart", (event) => event.preventDefault())
+
+    </script>
+</body>
+</html>
